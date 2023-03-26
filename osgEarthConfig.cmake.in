@@ -1,0 +1,88 @@
+set(OSGEARTH_VERSION 3.1.0)
+
+@PACKAGE_INIT@
+
+set(XPREFIX OSGEARTH)
+
+include(SelectLibraryConfigurations)
+
+#
+# OSGEARTH_FIND_LIBRARY
+#
+function(OSGEARTH_FIND_LIBRARY module)
+  string(TOUPPER ${module} module_uc)
+
+  find_library(${module}_LIBRARY_RELEASE
+    NAMES ${module}
+    HINTS
+      ENV ${module_uc}_DIR
+      ${${module_uc}_DIR}
+      ${${XPREFIX}_LIBRARY_DIRS}
+    PATH_SUFFIXES lib
+  )
+
+  find_library(${module}_LIBRARY_DEBUG
+    NAMES ${module}d
+    HINTS
+      ENV ${module_uc}_DIR
+      ${${module_uc}_DIR}
+      ${${XPREFIX}_LIBRARY_DIRS}
+    PATH_SUFFIXES debug/lib lib
+  )
+
+  select_library_configurations(${module})
+
+  # the variables set by select_library_configurations go out of scope
+  # here, so we need to set them again
+  set(${module}_LIBRARY ${${module}_LIBRARY} PARENT_SCOPE)
+  set(${module}_LIBRARIES ${${module}_LIBRARIES} PARENT_SCOPE)
+endfunction()
+
+if (osgEarth_USE_STATIC_LIBS)
+    set(XPREFIX ${XPREFIX}_STATIC)
+endif()
+
+set(osgEarth_DEFINITIONS ${${XPREFIX}_CFLAGS})
+
+find_path(osgEarth_INCLUDE_DIR
+    NAMES osgEarth/MapNode
+    HINTS ${${XPREFIX}_INCLUDE_DIRS}
+)
+
+OSGEARTH_FIND_LIBRARY(osgEarth)
+OSGEARTH_FIND_LIBRARY(osgEarthAnnotation)
+OSGEARTH_FIND_LIBRARY(osgEarthFeatures)
+OSGEARTH_FIND_LIBRARY(osgEarthSplat)
+OSGEARTH_FIND_LIBRARY(osgEarthSymbology)
+OSGEARTH_FIND_LIBRARY(osgEarthUtil)
+
+set(osgEarth_LIBRARY_DIRS ${${XPREFIX}_LIBRARY_DIRS})
+set(osgEarth_LIBRARY_DIR  ${osgEarth_LIBRARY_DIRS})
+set(osgEarth_INCLUDE_DIRS ${osgEarth_INCLUDE_DIR})
+set(osgEarth_LDFLAGS      ${${XPREFIX}_LDFLAGS})
+set(osgEarth_LIBRARY
+  ${osgEarth_LIBRARY}
+  ${osgEarthAnnotation_LIBRARY}
+  ${osgEarthFeatures_LIBRARY}
+  ${osgEarthSplat_LIBRARY}
+  ${osgEarthSymbology_LIBRARY}
+  ${osgEarthUtil_LIBRARY})
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(osgEarth DEFAULT_MSG
+    osgEarth_LIBRARY
+    osgEarth_INCLUDE_DIR
+)
+
+string (REPLACE ";" " " osgEarth_LDFLAGS "${osgEarth_LDFLAGS}")
+
+add_library(osgEarth UNKNOWN IMPORTED)
+
+set_target_properties(osgEarth
+  PROPERTIES
+  IMPORTED_LOCATION             "${osgEarth_LIBRARIES}"
+  INTERFACE_INCLUDE_DIRECTORIES "${osgEarth_INCLUDE_DIRS}"
+  INTERFACE_LINK_LIBRARIES      "${osgEarth_LDFLAGS}"
+  INTERFACE_COMPILE_OPTIONS     "${osgEarth_DEFINITIONS}"
+)
+
+check_required_components(osgEarth)

@@ -408,3 +408,23 @@ SET(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE.txt )
 SET(CPACK_MONOLITHIC_INSTALL    1 )                                        # create a single, monolithic package.
     
 INCLUDE(CPack)
+
+#write out config files for vcpkg
+
+SET(INSTALL_INCDIR ${CMAKE_INSTALL_PREFIX}/include)
+SET(INSTALL_LIBDIR ${PROJECT_BINARY_DIR}/lib)	
+message(STATUS "INCDIR: ${INSTALL_INCDIR}")
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(osgEarthConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/osgEarthConfig.cmake
+  INSTALL_DESTINATION ${LIB_INSTALL_DIR}/osgearth/cmake
+  )
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/osgEarthConfigVersion.cmake
+  VERSION 2.10.2
+  COMPATIBILITY SameMajorVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/osgEarthConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/osgEarthConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake )
