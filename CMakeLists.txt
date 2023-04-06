@@ -138,8 +138,6 @@ ENDIF (OSGEARTH_USE_GLES)
 
 FIND_PACKAGE(CURL)
 FIND_PACKAGE(GDAL)
-FIND_PACKAGE(GEOS)
-FIND_PACKAGE(Sqlite3)
 FIND_PACKAGE(Poco)
 
 FIND_PACKAGE(LevelDB)
@@ -159,12 +157,19 @@ ELSE(MINGW)
     ENDIF()
 ENDIF(MINGW)
 
-FIND_PACKAGE(SilverLining QUIET)
-FIND_PACKAGE(Triton QUIET)
-FIND_PACKAGE(WEBP QUIET)
 
-FIND_PACKAGE(Protobuf QUIET)
 SET (PROTOBUF_USE_DLLS FALSE CACHE BOOL "Set this to true if Protobuf is compiled as dll")
+
+find_package(GEOS CONFIG REQUIRED)
+set(GEOS_LIBRARY GEOS::geos_c)
+find_package(SQLITE3 NAMES unofficial-sqlite3 REQUIRED)
+set(SQLITE3_LIBRARY unofficial::sqlite3::sqlite3)
+find_package(Protobuf REQUIRED)
+find_package(WEBP NAMES WebP CONFIG REQUIRED)
+set(WEBP_LIBRARY WebP::webp)
+
+find_package(Triton QUIET REQUIRED)
+find_package(SilverLining QUIET REQUIRED)
 
 SET (WITH_EXTERNAL_DUKTAPE FALSE CACHE BOOL "Use bundled or system wide version of Duktape")
 IF (WITH_EXTERNAL_DUKTAPE)
@@ -229,13 +234,27 @@ INCLUDE(OsgEarthMacroUtils)
 INCLUDE(CXX11)
 check_for_cxx11_compiler(CXX11_AVAILABLE)
 
+find_path(OSG_INCLUDE_DIR osg/Version) # For detecting the version and setting the plugin path
+
 DETECT_OSG_VERSION()
 
 IF (NOT OPENSCENEGRAPH_VERSION)
 	SET(OPENSCENEGRAPH_VERSION ${OPENSCENEGRAPH_MAJOR_VERSION}.${OPENSCENEGRAPH_MINOR_VERSION}.${OPENSCENEGRAPH_PATCH_VERSION})
 ENDIF(NOT OPENSCENEGRAPH_VERSION)
 
-FIND_PACKAGE(OSG)
+find_package(OSG NAMES unofficial-osg)
+set(OSG_INCLUDE_DIRS "")
+set(OSG_LIBRARY unofficial::osg::osg)
+set(OSGUTIL_LIBRARY unofficial::osg::osgUtil)
+set(OSGDB_LIBRARY unofficial::osg::osgDB)
+set(OSGTEXT_LIBRARY unofficial::osg::osgText)
+set(OSGSIM_LIBRARY unofficial::osg::osgSim)
+set(OSGVIEWER_LIBRARY unofficial::osg::osgViewer)
+set(OSGGA_LIBRARY unofficial::osg::osgViewer)
+set(OSGSHADOW_LIBRARY unofficial::osg::osgShadow)
+set(OSGMANIPULATOR_LIBRARY unofficial::osg::osgManipulator)
+set(OSGTERRAIN_LIBRARY unofficial::osg::osgTerrain)
+set(OPENTHREADS_LIBRARY unofficial::osg::OpenThreads)
 
 # Make the headers visible to everything
 INCLUDE_DIRECTORIES(
