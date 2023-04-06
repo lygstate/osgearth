@@ -29,7 +29,7 @@
 #define GEOS_USE_ONLY_R_API
 #include <geos_c.h>
 
-namespace osgEarth { namespace Util
+namespace osgEarth { namespace Symbology
 {
     class GEOS
     {

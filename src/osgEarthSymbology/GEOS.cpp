@@ -1,6 +1,6 @@
 /* -*-c++-*- */
 /* osgEarth - Geospatial SDK for OpenSceneGraph
- * Copyright 2020 Pelican Mapping
+ * Copyright 2019 Pelican Mapping
  * http://osgearth.org
  *
  * osgEarth is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 #ifdef OSGEARTH_HAVE_GEOS
 
-#include <osgEarth/GEOS>
+#include <osgEarthSymbology/GEOS>
 #include <osg/Notify>
 
 using namespace osgEarth;
@@ -85,7 +85,7 @@ namespace
                     output = GEOSGeom_createCollection_r(handle, GEOSGeomTypes::GEOS_MULTIPOLYGON, children.data(), children.size());
                 else if (compType == Geometry::TYPE_LINESTRING)
                     output = GEOSGeom_createCollection_r(handle, GEOSGeomTypes::GEOS_MULTILINESTRING, children.data(), children.size());
-                else if (compType == Geometry::TYPE_POINT || compType == Geometry::TYPE_POINTSET)
+                else if (compType == Geometry::TYPE_POINTSET)
                     output = GEOSGeom_createCollection_r(handle, GEOSGeomTypes::GEOS_MULTIPOINT, children.data(), children.size());
                 else
                     output = GEOSGeom_createCollection_r(handle, GEOSGeomTypes::GEOS_GEOMETRYCOLLECTION, children.data(), children.size());
@@ -101,7 +101,6 @@ namespace
                 break;
             case Geometry::TYPE_MULTI: break;
 
-            case Geometry::TYPE_POINT:
             case Geometry::TYPE_POINTSET:
                 seq = vec3dArray2CoordSeq(handle, input, false);
                 if (seq) output = GEOSGeom_createPoint_r(handle, seq);
@@ -217,18 +216,7 @@ Geometry* GEOS::exportGeometry(GEOSContextHandle_t handle, const GEOSGeometry* i
     GeometryCollection parts;
 
     int typeId = GEOSGeomTypeId_r(handle, input);
-    if (typeId == GEOSGeomTypes::GEOS_POINT)
-    {
-        const GEOSCoordSequence* s = GEOSGeom_getCoordSeq_r(handle, input);
-        Point* part = new Point();
-        double x, y, z;
-        GEOSCoordSeq_getX_r(handle, s, 0, &x);
-        GEOSCoordSeq_getY_r(handle, s, 0, &y);
-        GEOSCoordSeq_getZ_r(handle, s, 0, &z);
-        part->set(osg::Vec3d(x, y, z));
-        return part;
-    }
-    else if (typeId == GEOSGeomTypes::GEOS_MULTIPOINT)
+    if (typeId == GEOSGeomTypes::GEOS_MULTIPOINT)
     {
         unsigned int numGeometries = GEOSGetNumGeometries_r(handle, input);
         PointSet* part = new PointSet(numGeometries);
